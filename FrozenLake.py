@@ -19,7 +19,6 @@ def runFrozenLake():
         desc=None,
         map_name="8x8",
         is_slippery=False,
-        #success_rate=1.0/3.0,
         render_mode=None
     )
 
@@ -103,6 +102,8 @@ def runFrozenLake():
         # End of the training loop
 
     # This render is for the final run to show the best route found, and to record for the assignment
+    successful_runs = 0
+    total_reward = 0
     for i in range(30):
         Render = gym.make(
                 'FrozenLake-v1',
@@ -115,20 +116,44 @@ def runFrozenLake():
         state = Render.reset()[0]
         terminated = False
         truncated = False
+        steps = 0
 
         while not terminated and not truncated:
             best_actions = np.flatnonzero(q[state] == np.max(q[state]))
             action = np.random.choice(best_actions)
             state, reward, terminated, truncated, info = Render.step(action)
+            steps += 1
+            if terminated:
+                if reward == 1:
+                    reward = 10
+                else:
+                    reward = -10
+            else:
+                reward = -0.1
+            
+            total_reward += reward
+
+
+        if terminated and reward == 10:
+                    successful_runs += 1
+
+        
+        print("Number of steps: ", steps)
+
         
     Render.close()
+
+    
+    print("Success rate: " , successful_runs/30)
+    print("Mean reward: ", total_reward/30)
+
     # End of the render for the final run -----------------------------
     
 
     # This next part is to calculate the average number of steps it took to reach the goal for all successful runs
     success_steps = steps_per_episode[reward_per_episode == 1]
 
-    print("Average steps to goal: ",np.mean(success_steps))
+    print("\nAverage steps to goal: ",np.mean(success_steps))
     print("Worst steps to goal: ",np.max(success_steps))
     print("The best reward route discovered: ",total_reward_per_episode.max())
     
@@ -156,6 +181,9 @@ def runFrozenLake():
 
     Environment.close()
     # End of the runFrozenLake function
+
+
+
 
 # Main execution
 if __name__ == "__main__":
