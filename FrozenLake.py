@@ -33,8 +33,8 @@ def runFrozenLake():
     episodes = 10000
     learning_rate_alpha = 0.5
     discount_factor_gamma = 0.9
-    epsilon = 1
-    epsilon_decay = 0.00012
+    epsilon = 0.55
+    epsilon_decay = 0.0001
 
     # Initialize arrays to store the reward and number of steps for each run
     reward_per_episode = np.zeros(episodes)
@@ -103,23 +103,24 @@ def runFrozenLake():
         # End of the training loop
 
     # This render is for the final run to show the best route found, and to record for the assignment
-    Render = gym.make(
-            'FrozenLake-v1',
-            desc=None,
-            map_name="8x8",
-            is_slippery=False,
-            render_mode="human"
-        )
+    for i in range(30):
+        Render = gym.make(
+                'FrozenLake-v1',
+                desc=None,
+                map_name="8x8",
+                is_slippery=False,
+                render_mode="human"
+            )
 
-    state = Render.reset()[0]
-    terminated = False
-    truncated = False
+        state = Render.reset()[0]
+        terminated = False
+        truncated = False
 
-    while not terminated and not truncated:
-        best_actions = np.flatnonzero(q[state] == np.max(q[state]))
-        action = np.random.choice(best_actions)
-        state, reward, terminated, truncated, info = Render.step(action)
-    
+        while not terminated and not truncated:
+            best_actions = np.flatnonzero(q[state] == np.max(q[state]))
+            action = np.random.choice(best_actions)
+            state, reward, terminated, truncated, info = Render.step(action)
+        
     Render.close()
     # End of the render for the final run -----------------------------
     
@@ -127,7 +128,8 @@ def runFrozenLake():
     # This next part is to calculate the average number of steps it took to reach the goal for all successful runs
     success_steps = steps_per_episode[reward_per_episode == 1]
 
-    print("Average steps to success: ",np.mean(success_steps))
+    print("Average steps to goal: ",np.mean(success_steps))
+    print("Worst steps to goal: ",np.max(success_steps))
     print("The best reward route discovered: ",total_reward_per_episode.max())
     
     # We are graphing by the success rate of the last 100 runs
